@@ -22,12 +22,15 @@ url: https://github.com/KunKun24/tg-bot-security-auditor
 name: KunKun24/tg-bot-security-auditor
 category: skill
 description:
-  en: "Read-only security, authorization and business-logic audit for Telegram Bot repositories, with file:line evidence and a DSH skill bundle that never modifies the audited project."
-  zh: "只读审计 Telegram Bot 仓库的 DSH 技能包，覆盖授权、支付、注入与业务逻辑，结论带 文件:行号 证据，从不改动被审项目。"
+  en: 'Read-only security, authorization and business-logic audit of Telegram Bot repositories in any language. Produces file:line findings with severity, confidence and a reproducible read-only command; ships rules for 8 audit domains, 9 language sink tables, a threat model, an authorization matrix and a findings JSON schema that validates in CI.'
+  zh: '只读审计 Telegram Bot 仓库的安全、授权与业务逻辑问题，语言不限。每条发现都锚定 file:line，标注严重度、置信度并附可复现的只读命令；内置 8 个审计域规则、9 种语言的危险 API 对照、威胁模型、授权矩阵，以及可在 CI 校验的 findings JSON Schema。'
+icon: https://raw.githubusercontent.com/KunKun24/tg-bot-security-auditor/main/docs/images/icon.png
+tarball: https://github.com/KunKun24/tg-bot-security-auditor/releases/latest/download/tg-bot-security-auditor.tgz
 ```
 
 - `description.en` 是必填项，写成完整句子，包含冒号时整体加引号。
-- 可选项 `icon`：目前留空，市场侧会回落到仓库头像；如后续单独托管图标 URL 再补。
+- `icon` 指向仓库内 512×512 的 PNG，市场卡片直接取用。
+- `tarball` 指向 `v2.1.0` release 里手动上传的 `tg-bot-security-auditor.tgz`（资产名不带版本号，`latest/download/` 不会随发版 404），预构建安装可跳过构建授权步骤。
 - `category` 取值来自市场枚举，`skill` 为技能包分类。
 
 ## 三、截图清单
