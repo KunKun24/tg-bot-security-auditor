@@ -51,12 +51,30 @@ def fail(msg):
 
 
 def read(root, rel):
-    with open(os.path.join(root, rel), encoding="utf-8") as fh:
-        return fh.read()
+    """Return file content, or "" after recording a readable problem.
+
+    A missing file must never raise here: the caller turns it into a FAIL line.
+    A traceback in CI tells the reader nothing about which file is absent.
+    """
+    path = os.path.join(root, rel)
+    if not os.path.isfile(path):
+        fail(f"cannot read {rel}: file is missing")
+        return ""
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return fh.read()
+    except OSError as exc:
+        fail(f"cannot read {rel}: {exc.strerror or exc}")
+        return ""
+    except UnicodeDecodeError:
+        fail(f"cannot read {rel}: not valid UTF-8")
+        return ""
 
 
 def check_frontmatter(root):
     text = read(root, "SKILL.md")
+    if not text:
+        return
     m = FRONTMATTER_RE.match(text)
     if not m:
         return fail("SKILL.md: missing YAML frontmatter block")
@@ -119,8 +137,12 @@ def check_whitespace(root):
                 continue
             path = os.path.join(dirpath, name)
             rel = os.path.relpath(path, root)
-            with open(path, encoding="utf-8") as fh:
-                data = fh.read()
+            try:
+                with open(path, encoding="utf-8") as fh:
+                    data = fh.read()
+            except (OSError, UnicodeDecodeError) as exc:
+                fail(f"cannot read {rel}: {exc}")
+                continue
             if not data.endswith("\n"):
                 fail(f"{rel}: no trailing newline")
             for i, line in enumerate(data.splitlines(), 1):
@@ -138,8 +160,11 @@ def check_required(root):
 
 def check_schema(root):
     rel = "assets/findings.schema.json"
+    text = read(root, rel)
+    if not text:
+        return
     try:
-        data = json.loads(read(root, rel))
+        data = json.loads(text)
     except json.JSONDecodeError as exc:
         return fail(f"{rel}: invalid JSON ({exc})")
     if data.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
