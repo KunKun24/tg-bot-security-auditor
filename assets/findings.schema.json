@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/KunKun24/tg-bot-security-auditor/assets/findings.schema.json",
+  "title": "Telegram Bot Audit Findings",
+  "description": "Machine-readable output of the tg-bot-security-auditor skill. One object per audit run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "audit", "findings", "coverage"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project", "date", "mode"],
+      "properties": {
+        "project": { "type": "string", "minLength": 1 },
+        "commit": { "type": ["string", "null"], "description": "git SHA audited, null when not a git checkout" },
+        "branch": { "type": ["string", "null"] },
+        "dirty": { "type": ["boolean", "null"] },
+        "date": { "type": "string", "format": "date-time" },
+        "mode": { "enum": ["lite", "full", "re-audit"] },
+        "languages": { "type": "array", "items": { "type": "string" } },
+        "frameworks": { "type": "array", "items": { "type": "string" } },
+        "advisory_lookup": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "performed": { "type": "boolean" },
+            "date": { "type": ["string", "null"], "format": "date-time" },
+            "sources": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "included": { "type": "array", "items": { "type": "string" } },
+            "excluded": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "reason"],
+                "properties": {
+                  "path": { "type": "string" },
+                  "reason": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id", "title", "severity", "priority", "status", "confidence",
+          "location", "impact", "remediation"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^F-[0-9]{3,}$" },
+          "title": { "type": "string", "minLength": 3 },
+          "severity": { "enum": ["Critical", "High", "Medium", "Low", "Informational"] },
+          "priority": { "enum": ["P0", "P1", "P2", "P3"] },
+          "status": { "enum": ["CONFIRMED", "POTENTIAL", "NEEDS-VALIDATION", "OBSERVATION"] },
+          "confidence": { "enum": ["High", "Medium", "Low"] },
+          "category": {
+            "type": "string",
+            "description": "Domain slug, e.g. authz, telegram, injection, payments, db, deployment, deps, perf, quality"
+          },
+          "cwe": { "type": ["string", "null"], "pattern": "^CWE-[0-9]+$" },
+          "cve": { "type": ["string", "null"] },
+          "fingerprint": {
+            "type": ["string", "null"],
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "description": "sha256(path + '::' + symbol + '::' + cwe) for re-audit diffing"
+          },
+          "location": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "lines": {
+                "type": ["string", "null"],
+                "pattern": "^[0-9]+(-[0-9]+)?$",
+                "description": "start line or start-end, e.g. '41' or '41-58'"
+              },
+              "symbol": { "type": ["string", "null"], "description": "function/handler name" }
+            }
+          },
+          "source": { "type": ["string", "null"], "description": "tainted origin, e.g. callback_query.data" },
+          "sink": { "type": ["string", "null"], "description": "sensitive operation reached" },
+          "control_gap": { "type": ["string", "null"], "description": "the missing or ineffective control" },
+          "preconditions": { "type": "array", "items": { "type": "string" } },
+          "evidence_cmd": { "type": ["string", "null"], "description": "read-only command that reproduces the path" },
+          "evidence": { "type": ["string", "null"], "description": "minimal redacted excerpt or description" },
+          "control_elsewhere": { "type": ["string", "null"], "description": "result of the 'is it enforced elsewhere?' check" },
+          "impact": { "type": "string", "minLength": 3 },
+          "root_cause": { "type": ["string", "null"] },
+          "remediation": { "type": "string", "minLength": 3 },
+          "verification": { "type": ["string", "null"], "description": "safe, non-mutating verification procedure" },
+          "related": { "type": "array", "items": { "type": "string" } },
+          "authorization_row": { "type": ["string", "null"], "pattern": "^A-[0-9]{2,}$" },
+          "tags": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["domain", "status"],
+        "properties": {
+          "domain": {
+            "enum": [
+              "transport", "identity-authz", "injection", "payments",
+              "database", "files-network", "dependencies", "deployment",
+              "performance", "quality"
+            ]
+          },
+          "status": { "enum": ["Reviewed", "Finding", "N/A", "Not reviewed"] },
+          "notes": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "limitations": { "type": "array", "items": { "type": "string" } }
+  }
+}

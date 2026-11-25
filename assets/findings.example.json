@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.0",
+  "audit": {
+    "project": "shop-bot",
+    "commit": "9f3c2ab5b0d1e6f2a7c4d8e9f0a1b2c3d4e5f6a7",
+    "branch": "main",
+    "dirty": false,
+    "date": "2026-11-20T15:40:00+08:00",
+    "mode": "full",
+    "languages": ["python"],
+    "frameworks": ["aiogram 3.15", "SQLAlchemy 2.0"],
+    "advisory_lookup": {
+      "performed": true,
+      "date": "2026-11-20T15:55:00+08:00",
+      "sources": ["https://osv.dev", "https://github.com/advisories"]
+    },
+    "scope": {
+      "included": ["app/", "alembic/", "deploy/", "pyproject.toml"],
+      "excluded": [
+        { "path": "vendor/", "reason": "upstream copy, not maintained here" },
+        { "path": "logs/", "reason": "runtime artefacts" }
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "title": "Payment callback credits balance without authenticity check",
+      "severity": "Critical",
+      "priority": "P0",
+      "status": "CONFIRMED",
+      "confidence": "High",
+      "category": "payments",
+      "cwe": "CWE-639",
+      "fingerprint": "sha256:6b1d0c9a2f4e8b7d3c5a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c",
+      "location": { "path": "app/handlers/pay.py", "lines": "41-58", "symbol": "on_confirm" },
+      "source": "callback_query.data",
+      "sink": "services.balance.credit",
+      "control_gap": "decoded order owner is never compared with callback.from.id",
+      "preconditions": ["attacker can press a button in their own chat", "order id is guessable or leaked"],
+      "evidence_cmd": "rg -n \"credit\\(\" app/",
+      "evidence": "line 44 decodes uid from callback data; line 52 calls credit(uid, 100) with no actor comparison",
+      "control_elsewhere": "no middleware on the router; the service layer does not check either",
+      "impact": "any user can credit an arbitrary account, repeatable, directly money-equivalent",
+      "root_cause": "payload carries the subject; authorization was assumed from the inline keyboard",
+      "remediation": "derive the subject from callback.from.id, verify order ownership in the service layer, add an idempotency key on the order",
+      "verification": "in an isolated copy with two fixture users, press the button from user B with user A's payload; expect rejection",
+      "authorization_row": "A-03",
+      "tags": ["payment", "callback", "idor"]
+    },
+    {
+      "id": "F-002",
+      "title": "Successful payment handler is not idempotent",
+      "severity": "High",
+      "priority": "P1",
+      "status": "POTENTIAL",
+      "confidence": "Medium",
+      "category": "payments",
+      "cwe": "CWE-837",
+      "fingerprint": "sha256:1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f809",
+      "location": { "path": "app/handlers/pay.py", "lines": "77-96", "symbol": "on_successful_payment" },
+      "source": "message.successful_payment",
+      "sink": "db.balance_credit",
+      "control_gap": "credit keyed on the update, no unique constraint on telegram_payment_charge_id found",
+      "preconditions": ["webhook redelivery or a crash between credit and commit"],
+      "evidence_cmd": "rg -n \"telegram_payment_charge_id|UNIQUE|idempot\" app/ alembic/",
+      "control_elsewhere": "grep found no unique index; runtime isolation not available to confirm",
+      "impact": "duplicate fulfillment on redelivery",
+      "remediation": "insert charge id into a ledger with a unique constraint, credit in the same transaction",
+      "verification": "replay the same update twice against a scratch database",
+      "authorization_row": "A-04",
+      "tags": ["payment", "idempotency"]
+    },
+    {
+      "id": "F-003",
+      "title": "Webhook endpoint accepts unauthenticated updates",
+      "severity": "High",
+      "priority": "P1",
+      "status": "NEEDS-VALIDATION",
+      "confidence": "Low",
+      "category": "transport",
+      "cwe": "CWE-345",
+      "fingerprint": "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+      "location": { "path": "app/webhook.py", "lines": "12-30", "symbol": "webhook" },
+      "source": "HTTP request body",
+      "sink": "dp.feed_update",
+      "control_gap": "no X-Telegram-Bot-Api-Secret-Token comparison in application code",
+      "preconditions": ["the public endpoint is reachable without a gateway"],
+      "evidence_cmd": "rg -n \"secret_token|X-Telegram-Bot-Api-Secret-Token\" app/ deploy/",
+      "control_elsewhere": "deploy/nginx.conf may restrict by path; whether it authenticates is unknown from the repo",
+      "impact": "forged updates impersonate any user if the endpoint is public",
+      "remediation": "generate a per-environment secret, compare with hmac.compare_digest, reject before parsing",
+      "verification": "inspect the deployed nginx config and the setWebhook secret_token value",
+      "tags": ["transport", "webhook"]
+    },
+    {
+      "id": "F-004",
+      "title": "f-string SQL in the order lookup",
+      "severity": "Medium",
+      "priority": "P2",
+      "status": "OBSERVATION",
+      "confidence": "High",
+      "category": "injection",
+      "cwe": "CWE-89",
+      "fingerprint": "sha256:00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+      "location": { "path": "app/repo/orders.py", "lines": "33", "symbol": "get_order" },
+      "impact": "none demonstrated: the value is cast to int at the call boundary",
+      "remediation": "use a bound parameter for consistency with the rest of the module",
+      "tags": ["sql", "style"]
+    }
+  ],
+  "coverage": [
+    { "domain": "transport", "status": "Finding", "notes": "webhook secret unresolved" },
+    { "domain": "identity-authz", "status": "Finding", "notes": "3 handlers reviewed, 1 bypass" },
+    { "domain": "injection", "status": "Reviewed", "notes": "no tainted sink reached execution" },
+    { "domain": "payments", "status": "Finding", "notes": "state machine documented in the report" },
+    { "domain": "database", "status": "Reviewed", "notes": "migrations inspected, no dynamic DDL" },
+    { "domain": "files-network", "status": "Reviewed", "notes": "no user-controlled outbound requests" },
+    { "domain": "dependencies", "status": "Not reviewed", "notes": "advisory lookup deferred to the owner" },
+    { "domain": "deployment", "status": "Reviewed", "notes": "Dockerfile runs as root; noted in the report" },
+    { "domain": "performance", "status": "N/A", "notes": "traffic volume unknown" },
+    { "domain": "quality", "status": "Reviewed", "notes": "no test suite" }
+  ],
+  "limitations": [
+    "deployed nginx configuration not available",
+    "no staging database for concurrency testing",
+    "runtime isolation level of the production database unknown"
+  ]
+}

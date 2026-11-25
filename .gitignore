@@ -21,6 +21,8 @@ npm-debug.log*
 !.env.example
 audit-report*.md
 findings*.json
+!assets/findings.schema.json
+!assets/findings.example.json
 *.local
 
 # Logs
