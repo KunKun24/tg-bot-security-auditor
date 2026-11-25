@@ -1,0 +1,22 @@
+# Example configuration for tg-bot-security-auditor.
+#
+# Installing the bundle is enough — it registers its bundled skill directory,
+# so no configuration is required:
+#
+#   dsh plugin --profile web add tg-bot-security-auditor
+#   # or straight from this repository:
+#   dsh plugin --profile web add github:KunKun24/tg-bot-security-auditor
+#
+# The blocks below are optional. Append the one you need to
+# <DSH_HOME>/profiles/<profile>/cordis.patch.yml, then restart dsh.
+
+# 1) Pin the plugin explicitly in a profile patch layer (stable id).
+- insert:
+    - id: tg-bot-security-auditor
+      name: 'tg-bot-security-auditor'
+
+# 2) Prefer a project-local copy of the skill (forks, private rules) and turn
+#    the bundled provider off. The project copy lives at <repo>/.dsh/skills/
+#    tg-bot-security-auditor/ and wins by loader order for that workspace.
+# - id: tg-bot-security-auditor
+#   disabled: true

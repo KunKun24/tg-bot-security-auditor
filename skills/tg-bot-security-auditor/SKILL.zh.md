@@ -1,7 +1,7 @@
 ---
 name: tg-bot-security-auditor
 description: 对任意语言的 Telegram Bot 仓库做只读安全、授权与业务逻辑审计（Python、Node.js、PHP、Go、Java/Kotlin、Rust、C#、Ruby）。当用户要求审计、复核、体检 TG 机器人及其 webhook 后端、支付流程或 Mini App，或在修复后复审计时使用。产出带文件/行号锚点、严重度、置信度与可复现证据的发现，全程不修改项目。
-version: 2.0.0
+version: 2.1.0
 license: MIT
 ---
 
@@ -167,4 +167,4 @@ verification: 静态路径 + 两个 user_id 的单元夹具
 
 ---
 
-> 本文档为 AIGC 辅助生成、已人工审计。详见 `README.md`。
+> 本文档为 AIGC 辅助生成、已人工审计。详见 https://github.com/KunKun24/tg-bot-security-auditor

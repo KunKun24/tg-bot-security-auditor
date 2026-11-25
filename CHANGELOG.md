@@ -2,6 +2,23 @@
 
 本文件记录本 skill 的变更。版本遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## 2.1.0 — 2026-11-25
+
+打包为可被 DSH 插件市场（dshmarket / awesome-dsh-plugin）收录的 bundle，技能内容不变。
+
+### 新增
+
+- `package.json` / `cordis.patch.yml` / `index.js`：声明 `dsh.bundle.patch`，通过 `applyFilesystemProvider()` 把包内 `skills/` 注册为技能来源；装完即生效，无需手改 profile。
+- `examples/config.example.yml`：需要固定 bundle id 或改用本地技能副本时的配置样例。
+- `docs/submission.md` + `docs/en/submission.md`：收录字段、截图清单、链接清单、PR 正文模板与披露方式。
+- `docs/images/`：封面、流程、发现示例、终端输出、图标五张图，市场详情页直接取用。
+- README 中英双语版重写：安装、用法、覆盖范围、目录结构、兼容性、自检命令。
+
+### 变更
+
+- 技能文件移入 `skills/tg-bot-security-auditor/`，根目录只保留打包与文档；`scripts/validate_findings.py` 随之移动。
+- `scripts/check.py` 增加 manifest 一致性检查（`dsh.bundle.patch` 是否存在、`cordis.patch.yml` 是否注册同名条目、`files` 是否齐全、技能版本与包版本是否同步）。
+
 ## 2.0.0 — 2026-11-25
 
 首个公开发布版本，相对 1.0 的内部草稿做了结构性重写。

@@ -134,8 +134,13 @@ def _load_validator(jsonschema, schema_path):
         cls = getattr(jsonschema, "Draft202012Validator", None)
         if cls is None:
             from jsonschema import validators  # type: ignore
+            import warnings
 
-            cls = validators.validator_for(schema)
+            with warnings.catch_warnings():
+                # Partial builds cannot resolve the 2020-12 metaschema and fall
+                # back to the newest draft; that fallback is what we want here.
+                warnings.simplefilter("ignore", DeprecationWarning)
+                cls = validators.validator_for(schema)
         return cls(schema)
     except Exception as exc:  # noqa: BLE001 - any failure falls back to structural checks
         print(f"note: jsonschema unavailable ({exc}); using structural checks only")

@@ -20,8 +20,9 @@ jobs:
         run: python3 scripts/check.py --root .
       - name: Validate the example findings document
         run: |
-          if [ -f assets/findings.example.json ]; then
-            python3 scripts/validate_findings.py assets/findings.example.json --allow-missing-paths
+          SKILL=skills/tg-bot-security-auditor
+          if [ -f "$SKILL/assets/findings.example.json" ]; then
+            python3 "$SKILL/scripts/validate_findings.py" "$SKILL/assets/findings.example.json" --allow-missing-paths
           else
             echo "no example findings document; skipping"
           fi

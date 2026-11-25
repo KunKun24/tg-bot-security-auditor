@@ -1,7 +1,7 @@
 ---
 name: tg-bot-security-auditor
 description: Read-only security, authorization and business-logic audit of Telegram Bot repositories in any language (Python, Node.js, PHP, Go, Java/Kotlin, Rust, C#, Ruby). Use when asked to audit, review, security-check or report on a TG bot, its webhook backend, payment flow or Mini App, or to re-audit after fixes. Produces file/line-anchored findings with severity, confidence and reproducible evidence; never modifies the project.
-version: 2.0.0
+version: 2.1.0
 license: MIT
 ---
 
@@ -167,4 +167,4 @@ Smallest useful excerpt only; redact secrets and personal data; never paste whol
 
 ---
 
-> AIGC-assisted, human-audited. See `README.md` for details.
+> AIGC-assisted, human-audited. Details: https://github.com/KunKun24/tg-bot-security-auditor

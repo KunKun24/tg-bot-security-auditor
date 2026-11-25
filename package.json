@@ -1,0 +1,47 @@
+{
+  "name": "tg-bot-security-auditor",
+  "version": "2.1.0",
+  "description": "Read-only security, authorization and business-logic audit skill for Telegram Bot repositories, packaged for DeepSeek Harness (DSH).",
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "skills/",
+    "examples/",
+    "docs/images/",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "skill",
+    "telegram-bot",
+    "security-audit",
+    "authorization",
+    "business-logic"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KunKun24/tg-bot-security-auditor.git"
+  },
+  "homepage": "https://github.com/KunKun24/tg-bot-security-auditor#readme",
+  "bugs": {
+    "url": "https://github.com/KunKun24/tg-bot-security-auditor/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-skill-filesystem": ">=0.1.0-rc.6 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
